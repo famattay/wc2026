@@ -1,1 +1,3967 @@
+<!DOCTYPE html>
 
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+
+<meta name="theme-color" content="#0a0e0c">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<title>Panini FIFA 2026 — Tracker de Pipe</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+
+<style>
+
+  :root {
+
+    --bg: #0a0e0c;
+
+    --bg-2: #11181530;
+
+    --panel: #131a17;
+
+    --panel-2: #1a2320;
+
+    --line: #243029;
+
+    --line-2: #2f3d34;
+
+    --ink: #f2efe6;
+
+    --ink-2: #b8c2bb;
+
+    --ink-3: #6f7a73;
+
+    --pitch: #1f9d55;
+
+    --pitch-2: #36c374;
+
+    --pitch-3: #0f5132;
+
+    --gold: #d4a437;
+
+    --gold-2: #f0c45a;
+
+    --red: #d9534f;
+
+    --red-2: #e87870;
+
+    --amber: #e0a64a;
+
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+
+    background:
+
+      radial-gradient(1200px 600px at 80% -10%, #103a2030 0%, transparent 60%),
+
+      radial-gradient(900px 500px at -10% 30%, #0a3e2520 0%, transparent 60%),
+
+      var(--bg);
+
+    min-height: 100vh;
+
+    padding:
+
+      max(20px, env(safe-area-inset-top))
+
+      max(20px, env(safe-area-inset-right))
+
+      max(60px, env(safe-area-inset-bottom))
+
+      max(20px, env(safe-area-inset-left));
+
+  }
+
+
+
+  /* === HEADER === */
+
+  .hero {
+
+    border-bottom: 1px solid var(--line);
+
+    padding-bottom: 28px;
+
+    margin-bottom: 32px;
+
+    display: grid;
+
+    grid-template-columns: 1fr auto;
+
+    gap: 24px;
+
+    align-items: end;
+
+  }
+
+  .hero .eyebrow {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.18em;
+
+    color: var(--pitch-2);
+
+    margin-bottom: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+  }
+
+  .hero .eyebrow::before {
+
+    content: '';
+
+    width: 28px; height: 1px; background: var(--pitch-2);
+
+  }
+
+  .hero h1 {
+
+    font-family: 'Fraunces', serif;
+
+    font-weight: 900;
+
+    font-size: clamp(40px, 6vw, 72px);
+
+    line-height: 0.95;
+
+    letter-spacing: -0.025em;
+
+    margin-bottom: 6px;
+
+  }
+
+  .hero h1 em {
+
+    font-style: italic;
+
+    color: var(--gold);
+
+    font-weight: 600;
+
+  }
+
+  .hero .sub {
+
+    font-size: 14px;
+
+    color: var(--ink-2);
+
+    max-width: 520px;
+
+  }
+
+  .hero .meta {
+
+    text-align: right;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink-3);
+
+    line-height: 1.7;
+
+  }
+
+  .hero .meta strong { color: var(--ink); }
+
+
+
+  /* === TABS === */
+
+  .tabs {
+
+    display: flex;
+
+    gap: 0;
+
+    margin-bottom: 28px;
+
+    border-bottom: 1px solid var(--line);
+
+  }
+
+  .tab {
+
+    background: none;
+
+    border: none;
+
+    color: var(--ink-3);
+
+    font-family: 'Bebas Neue', sans-serif;
+
+    font-size: 18px;
+
+    letter-spacing: 0.08em;
+
+    padding: 14px 22px;
+
+    cursor: pointer;
+
+    border-bottom: 2px solid transparent;
+
+    transition: all 0.2s;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+  }
+
+  .tab:hover { color: var(--ink-2); }
+
+  .tab.active { color: var(--ink); border-bottom-color: var(--pitch-2); }
+
+  .tab .badge {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 10px;
+
+    background: var(--line);
+
+    color: var(--ink-2);
+
+    padding: 2px 7px;
+
+    border-radius: 3px;
+
+    letter-spacing: 0;
+
+  }
+
+  .tab.active .badge { background: var(--pitch-3); color: var(--pitch-2); }
+
+
+
+  /* === KPI ROW === */
+
+  .kpis {
+
+    display: grid;
+
+    grid-template-columns: repeat(5, 1fr);
+
+    gap: 12px;
+
+    margin-bottom: 28px;
+
+  }
+
+  .kpi {
+
+    background: var(--panel);
+
+    border: 1px solid var(--line);
+
+    border-radius: 6px;
+
+    padding: 18px 20px;
+
+    position: relative;
+
+    overflow: hidden;
+
+  }
+
+  .kpi::before {
+
+    content: '';
+
+    position: absolute;
+
+    top: 0; left: 0; right: 0; height: 2px;
+
+    background: var(--accent, var(--pitch-2));
+
+  }
+
+  .kpi.gold { --accent: var(--gold); }
+
+  .kpi.amber { --accent: var(--amber); }
+
+  .kpi.red { --accent: var(--red); }
+
+  .kpi.blue { --accent: #4a8fc4; }
+
+  .kpi .label {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.15em;
+
+    color: var(--ink-3);
+
+    margin-bottom: 10px;
+
+  }
+
+  .kpi .value {
+
+    font-family: 'Fraunces', serif;
+
+    font-weight: 700;
+
+    font-size: 38px;
+
+    line-height: 1;
+
+    letter-spacing: -0.02em;
+
+  }
+
+  .kpi .value .unit {
+
+    font-size: 14px;
+
+    color: var(--ink-3);
+
+    font-weight: 400;
+
+    margin-left: 4px;
+
+  }
+
+  .kpi .delta {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink-2);
+
+    margin-top: 8px;
+
+  }
+
+
+
+  /* === MAIN GRID === */
+
+  .grid-main {
+
+    display: grid;
+
+    grid-template-columns: 1.4fr 1fr;
+
+    gap: 20px;
+
+    margin-bottom: 28px;
+
+  }
+
+  .panel {
+
+    background: var(--panel);
+
+    border: 1px solid var(--line);
+
+    border-radius: 6px;
+
+    padding: 22px 24px;
+
+  }
+
+  .panel h3 {
+
+    font-family: 'Bebas Neue', sans-serif;
+
+    font-size: 20px;
+
+    letter-spacing: 0.08em;
+
+    margin-bottom: 4px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+  }
+
+  .panel h3 .hint {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 10px;
+
+    color: var(--ink-3);
+
+    letter-spacing: 0.1em;
+
+    font-weight: 400;
+
+  }
+
+  .panel .subhead {
+
+    font-size: 12px;
+
+    color: var(--ink-3);
+
+    margin-bottom: 18px;
+
+  }
+
+
+
+  /* === PROGRESS BAR === */
+
+  .progress-mega {
+
+    height: 14px;
+
+    background: var(--bg);
+
+    border: 1px solid var(--line-2);
+
+    border-radius: 999px;
+
+    overflow: hidden;
+
+    position: relative;
+
+    margin: 8px 0 14px;
+
+  }
+
+  .progress-mega .fill {
+
+    height: 100%;
+
+    background: linear-gradient(90deg, var(--pitch-3), var(--pitch-2));
+
+    border-radius: 999px;
+
+    transition: width 0.6s cubic-bezier(.4,1.4,.4,1);
+
+  }
+
+  .progress-legend {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink-3);
+
+  }
+
+
+
+  /* === COMPLETION LIST === */
+
+  .completion-list {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 4px 20px;
+
+    margin-top: 18px;
+
+  }
+
+  .comp-row {
+
+    display: grid;
+
+    grid-template-columns: 42px 1fr 50px;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 5px 0;
+
+    font-size: 12px;
+
+    border-bottom: 1px dashed var(--line);
+
+  }
+
+  .comp-row .code {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-weight: 600;
+
+    color: var(--ink);
+
+    font-size: 11px;
+
+  }
+
+  .comp-row .bar {
+
+    height: 5px;
+
+    background: var(--bg);
+
+    border-radius: 3px;
+
+    overflow: hidden;
+
+  }
+
+  .comp-row .bar .f {
+
+    height: 100%;
+
+    background: var(--pitch-2);
+
+    border-radius: 3px;
+
+  }
+
+  .comp-row .bar .f.low { background: var(--red); }
+
+  .comp-row .bar .f.mid { background: var(--amber); }
+
+  .comp-row .pct {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 10px;
+
+    color: var(--ink-2);
+
+    text-align: right;
+
+  }
+
+
+
+  /* === ALBUM GRID === */
+
+  .album-section { margin-bottom: 16px; }
+
+  .album-section .team-header {
+
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 14px;
+
+    margin: 18px 0 8px;
+
+    padding-bottom: 6px;
+
+    border-bottom: 1px solid var(--line);
+
+  }
+
+  .album-section .team-code {
+
+    font-family: 'Bebas Neue', sans-serif;
+
+    font-size: 22px;
+
+    letter-spacing: 0.06em;
+
+    color: var(--ink);
+
+  }
+
+  .album-section .team-stats {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink-3);
+
+    margin-left: auto;
+
+  }
+
+  .album-section .team-stats strong { color: var(--pitch-2); }
+
+
+
+  .sticker-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+
+    gap: 6px;
+
+  }
+
+  /* ESTADO: ME FALTA (regular) — gris azulado plano, neutro */
+
+  .sticker {
+
+    aspect-ratio: 1;
+
+    border: 1.5px solid #2a3a35;
+
+    background: #1c2622;
+
+    border-radius: 4px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    color: #5a6a64;
+
+    cursor: pointer;
+
+    transition: all 0.15s;
+
+    position: relative;
+
+    user-select: none;
+
+  }
+
+  .sticker:hover {
+
+    transform: translateY(-1px);
+
+    border-color: #4a6358;
+
+    color: var(--ink-2);
+
+  }
+
+
+
+  /* ESTADO: ME FALTA pero es BRILLANTE — patrón rayado dorado-oscuro, borde dashed dorado */
+
+  .sticker.foil {
+
+    background: repeating-linear-gradient(45deg, #2a1f08 0px, #2a1f08 4px, #1f1505 4px, #1f1505 8px);
+
+    border: 1.5px dashed var(--gold);
+
+    color: #8a7340;
+
+  }
+
+  .sticker.foil:hover {
+
+    color: var(--gold-2);
+
+    border-color: var(--gold-2);
+
+    box-shadow: 0 0 8px #d4a43730;
+
+  }
+
+
+
+  /* ESTADO: TENGO (regular) — verde cancha sólido */
+
+  .sticker.have {
+
+    background: var(--pitch-3);
+
+    border: 1.5px solid var(--pitch-2);
+
+    color: var(--ink);
+
+  }
+
+  .sticker.have::after {
+
+    content: '✓';
+
+    position: absolute;
+
+    top: 1px; right: 3px;
+
+    font-size: 9px;
+
+    color: #b8efc8;
+
+  }
+
+
+
+  /* ESTADO: TENGO BRILLANTE — dorado metalizado con glow */
+
+  .sticker.foil.have {
+
+    background: linear-gradient(135deg, #b8881d 0%, var(--gold-2) 35%, #ffe999 50%, var(--gold-2) 65%, #b8881d 100%);
+
+    border: 1.5px solid var(--gold-2);
+
+    color: #2a1f08;
+
+    box-shadow: 0 0 14px #d4a43760, inset 0 1px 0 #ffffff80;
+
+  }
+
+  .sticker.foil.have::after { color: #2a1f08; }
+
+
+
+  /* ESTADO: REPETIDA (regular) — naranja/ámbar para distinguir del dorado */
+
+  .sticker.rep {
+
+    background: linear-gradient(135deg, #c7611f 0%, #e8843a 100%);
+
+    border: 1.5px solid #f0a060;
+
+    color: #1f0e02;
+
+  }
+
+  .sticker.rep::after {
+
+    content: attr(data-rep);
+
+    position: absolute;
+
+    top: -3px; right: -3px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    background: #1f0e02;
+
+    color: #f0a060;
+
+    width: 15px; height: 15px;
+
+    border-radius: 50%;
+
+    display: flex; align-items: center; justify-content: center;
+
+    border: 1px solid #f0a060;
+
+  }
+
+
+
+  /* ESTADO: REPETIDA BRILLANTE — dorado claro con marcador rojo (alto valor) */
+
+  .sticker.foil.rep {
+
+    background: linear-gradient(135deg, var(--gold-2) 0%, #fff4c4 50%, var(--gold-2) 100%);
+
+    border: 1.5px solid #fff4c4;
+
+    color: #2a1f08;
+
+    box-shadow: 0 0 16px #d4a43780;
+
+  }
+
+  .sticker.foil.rep::after {
+
+    background: #8a1818;
+
+    color: #fff4c4;
+
+    border-color: #fff4c4;
+
+  }
+
+
+
+  /* Estrella indicadora de brillante */
+
+  .sticker .star {
+
+    position: absolute;
+
+    top: 1px; left: 3px;
+
+    font-size: 9px;
+
+    color: var(--gold);
+
+    text-shadow: 0 0 2px #000;
+
+  }
+
+  .sticker.foil.have .star,
+
+  .sticker.foil.rep .star { color: #2a1f08; text-shadow: 0 0 2px #ffffff80; }
+
+
+
+  /* === FILTERS === */
+
+  .filter-row {
+
+    display: flex;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+
+    margin-bottom: 20px;
+
+    align-items: center;
+
+  }
+
+  .chip {
+
+    background: var(--panel);
+
+    border: 1px solid var(--line);
+
+    border-radius: 999px;
+
+    padding: 6px 14px;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink-2);
+
+    cursor: pointer;
+
+    transition: all 0.2s;
+
+  }
+
+  .chip:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  .chip.active { background: var(--pitch-3); border-color: var(--pitch-2); color: var(--ink); }
+
+  .filter-row .spacer { flex: 1; }
+
+  .filter-row .search {
+
+    background: var(--panel);
+
+    border: 1px solid var(--line);
+
+    color: var(--ink);
+
+    padding: 7px 14px;
+
+    border-radius: 999px;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    width: 200px;
+
+    outline: none;
+
+  }
+
+  .filter-row .search:focus { border-color: var(--pitch-2); }
+
+
+
+  /* === ACTIONS === */
+
+  .actions {
+
+    display: flex;
+
+    gap: 8px;
+
+  }
+
+  .btn {
+
+    background: var(--panel);
+
+    border: 1px solid var(--line);
+
+    color: var(--ink-2);
+
+    padding: 7px 14px;
+
+    border-radius: 4px;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 0.1em;
+
+    text-transform: uppercase;
+
+    cursor: pointer;
+
+    transition: all 0.2s;
+
+  }
+
+  .btn:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  .btn.primary { background: var(--pitch-3); border-color: var(--pitch-2); color: var(--ink); }
+
+  .btn.danger:hover { border-color: var(--red); color: var(--red-2); }
+
+
+
+  /* === LEGEND === */
+
+  .legend {
+
+    display: flex;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+
+    padding: 14px 18px;
+
+    background: var(--panel-2);
+
+    border-radius: 6px;
+
+    border: 1px solid var(--line);
+
+    margin-bottom: 24px;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink-2);
+
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+
+  .legend-sw {
+
+    width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--line-2);
+
+  }
+
+  .legend-sw.sw-missing { background: #1c2622; border-color: #2a3a35; }
+
+  .legend-sw.sw-have { background: var(--pitch-3); border-color: var(--pitch-2); }
+
+  .legend-sw.sw-rep { background: linear-gradient(135deg, #c7611f, #e8843a); border-color: #f0a060; }
+
+  .legend-sw.sw-foil-missing { background: repeating-linear-gradient(45deg, #2a1f08 0px, #2a1f08 3px, #1f1505 3px, #1f1505 6px); border: 1.5px dashed var(--gold); }
+
+  .legend-sw.sw-foil-have { background: linear-gradient(135deg, #b8881d, var(--gold-2), #ffe999, var(--gold-2), #b8881d); border-color: var(--gold-2); }
+
+
+
+  /* === INTERCAMBIO === */
+
+  .swap-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+
+  }
+
+  .swap-col h4 {
+
+    font-family: 'Bebas Neue', sans-serif;
+
+    font-size: 18px;
+
+    letter-spacing: 0.08em;
+
+    margin-bottom: 14px;
+
+    padding-bottom: 8px;
+
+    border-bottom: 1px solid var(--line);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+  }
+
+  .swap-col h4 .count {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 12px;
+
+    color: var(--ink-3);
+
+    font-weight: 400;
+
+    letter-spacing: 0;
+
+  }
+
+  .swap-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    max-height: 600px;
+
+    overflow-y: auto;
+
+    padding-right: 6px;
+
+  }
+
+  .swap-list::-webkit-scrollbar { width: 6px; }
+
+  .swap-list::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+  .swap-item {
+
+    display: grid;
+
+    grid-template-columns: 50px 1fr auto;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 10px 14px;
+
+    background: var(--panel-2);
+
+    border: 1px solid var(--line);
+
+    border-radius: 4px;
+
+    font-size: 13px;
+
+  }
+
+  .swap-item .team {
+
+    font-family: 'Bebas Neue', sans-serif;
+
+    font-size: 16px;
+
+    letter-spacing: 0.04em;
+
+  }
+
+  .swap-item .nums {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink-2);
+
+    line-height: 1.6;
+
+    word-spacing: 4px;
+
+  }
+
+  .swap-item .nums .n {
+
+    display: inline-block;
+
+    padding: 1px 6px;
+
+    margin: 1px 1px;
+
+    background: var(--bg);
+
+    border: 1px solid var(--line-2);
+
+    border-radius: 3px;
+
+    color: var(--ink);
+
+  }
+
+  .swap-item .nums .n.foil {
+
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+
+    color: #1a1206;
+
+    border-color: var(--gold-2);
+
+    font-weight: 700;
+
+    box-shadow: 0 0 6px #d4a43750;
+
+  }
+
+  .swap-item .nums .n.rep-multi {
+
+    background: linear-gradient(135deg, #c7611f, #e8843a);
+
+    color: #1f0e02;
+
+    border-color: #f0a060;
+
+  }
+
+  .swap-item .total {
+
+    font-family: 'Fraunces', serif;
+
+    font-size: 24px;
+
+    font-weight: 700;
+
+    color: var(--pitch-2);
+
+  }
+
+  .swap-list .swap-item.dim { opacity: 0.4; }
+
+
+
+  /* === MAPA === */
+
+  .map-wrap {
+
+    position: relative;
+
+    width: 100%;
+
+    background: linear-gradient(180deg, #0a1714 0%, #0a0e0c 100%);
+
+    border-radius: 6px;
+
+    overflow: hidden;
+
+  }
+
+  .map-wrap svg { display: block; width: 100%; height: auto; }
+
+  .map-wrap .country {
+
+    fill: #1a2622;
+
+    stroke: #0a0e0c;
+
+    stroke-width: 0.5px;
+
+    transition: fill 0.2s, stroke 0.2s;
+
+  }
+
+  .map-wrap .country.participant {
+
+    cursor: pointer;
+
+    stroke: #2a3d35;
+
+    stroke-width: 0.6px;
+
+  }
+
+  .map-wrap .country.participant:hover {
+
+    stroke: var(--ink);
+
+    stroke-width: 1.5px;
+
+  }
+
+  .map-wrap .label {
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    fill: #f2efe6;
+
+    text-anchor: middle;
+
+    pointer-events: none;
+
+    paint-order: stroke;
+
+    stroke: #0a0e0c;
+
+    stroke-width: 2.5px;
+
+    stroke-linejoin: round;
+
+  }
+
+  .map-wrap .label.small {
+
+    font-size: 7px;
+
+  }
+
+  .map-tooltip {
+
+    position: absolute;
+
+    background: #11181e;
+
+    border: 1px solid var(--line-2);
+
+    border-radius: 4px;
+
+    padding: 10px 14px;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 11px;
+
+    color: var(--ink);
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    transition: opacity 0.15s;
+
+    z-index: 10;
+
+    box-shadow: 0 4px 12px #00000060;
+
+    min-width: 180px;
+
+  }
+
+  .map-tooltip.show { opacity: 1; }
+
+  .map-tooltip .tt-team {
+
+    font-family: 'Bebas Neue', sans-serif;
+
+    font-size: 18px;
+
+    letter-spacing: 0.06em;
+
+    margin-bottom: 4px;
+
+    color: var(--ink);
+
+  }
+
+  .map-tooltip .tt-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    color: var(--ink-2);
+
+    line-height: 1.7;
+
+  }
+
+  .map-tooltip .tt-row strong { color: var(--ink); }
+
+  .map-tooltip .tt-pct {
+
+    margin-top: 6px;
+
+    padding-top: 6px;
+
+    border-top: 1px dashed var(--line-2);
+
+    color: var(--pitch-2);
+
+    font-size: 13px;
+
+  }
+
+  .map-legend {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-top: 14px;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 10px;
+
+    color: var(--ink-2);
+
+    flex-wrap: wrap;
+
+  }
+
+  .map-legend .scale {
+
+    display: flex;
+
+    height: 12px;
+
+    width: 200px;
+
+    border-radius: 2px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--line-2);
+
+  }
+
+  .map-legend .scale > div { flex: 1; }
+
+  .map-loading {
+
+    text-align: center;
+
+    color: var(--ink-3);
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 12px;
+
+    padding: 80px 0;
+
+  }
+
+  .map-error {
+
+    text-align: center;
+
+    color: var(--amber);
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 12px;
+
+    padding: 60px 20px;
+
+  }
+
+  .chart-row {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+
+    margin-bottom: 28px;
+
+  }
+
+  .chart-box { height: 260px; position: relative; }
+
+
+
+  /* === HIDE === */
+
+  .view { display: none; }
+
+  .view.active { display: block; }
+
+
+
+  /* === FOOTER === */
+
+  footer {
+
+    margin-top: 60px;
+
+    padding-top: 24px;
+
+    border-top: 1px solid var(--line);
+
+    text-align: center;
+
+    font-family: 'JetBrains Mono', monospace;
+
+    font-size: 10px;
+
+    color: var(--ink-3);
+
+    letter-spacing: 0.1em;
+
+  }
+
+
+
+  /* ============================================================
+
+     RESPONSIVE — Sistema en cascada:
+
+     1100px → tablet horizontal (colapsa grid a 1 col)
+
+     760px  → tablet vertical
+
+     560px  → mobile grande (iPhone 17 Pro Max landscape, etc)
+
+     440px  → mobile estándar (iPhone Pro Max portrait)
+
+     380px  → mobile pequeño
+
+     ============================================================ */
+
+
+
+  @media (max-width: 1100px) {
+
+    .kpis { grid-template-columns: repeat(3, 1fr); }
+
+    .grid-main { grid-template-columns: 1fr; }
+
+    .swap-grid { grid-template-columns: 1fr; }
+
+    .chart-row { grid-template-columns: 1fr; }
+
+    .completion-list { grid-template-columns: 1fr 1fr; }
+
+  }
+
+
+
+  @media (max-width: 760px) {
+
+    .hero {
+
+      grid-template-columns: 1fr;
+
+      gap: 14px;
+
+    }
+
+    .hero .meta {
+
+      text-align: left;
+
+      display: flex;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+
+      font-size: 10px;
+
+    }
+
+    .hero .meta > div { white-space: nowrap; }
+
+    .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+    .completion-list { grid-template-columns: 1fr; }
+
+    .filter-row .search { width: 100%; order: -1; }
+
+    .filter-row { gap: 6px; }
+
+    .filter-row .actions { width: 100%; justify-content: flex-end; }
+
+    .legend { gap: 12px; padding: 12px 14px; }
+
+    .legend-item { font-size: 10px; }
+
+  }
+
+
+
+  @media (max-width: 560px) {
+
+    body { font-size: 14px; }
+
+    .hero h1 { font-size: clamp(32px, 9vw, 48px); }
+
+    .hero .sub { font-size: 13px; }
+
+    .hero .meta { font-size: 9px; gap: 6px; }
+
+    .hero .meta > div { padding: 3px 8px; background: var(--panel); border-radius: 3px; }
+
+
+
+    /* Tabs con scroll horizontal sin barra visible */
+
+    .tabs {
+
+      overflow-x: auto;
+
+      flex-wrap: nowrap;
+
+      -webkit-overflow-scrolling: touch;
+
+      scrollbar-width: none;
+
+      margin: 0 calc(-1 * max(20px, env(safe-area-inset-left))) 20px;
+
+      padding: 0 max(20px, env(safe-area-inset-left));
+
+    }
+
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+
+      padding: 12px 14px;
+
+      font-size: 15px;
+
+      flex-shrink: 0;
+
+      white-space: nowrap;
+
+    }
+
+    .tab .badge { font-size: 9px; padding: 2px 5px; }
+
+
+
+    /* KPIs en 2 columnas, valor más pequeño */
+
+    .kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 22px; }
+
+    .kpi { padding: 14px 14px 14px 16px; }
+
+    .kpi .label { font-size: 9px; margin-bottom: 6px; }
+
+    .kpi .value { font-size: 28px; }
+
+    .kpi .value .unit { font-size: 12px; }
+
+    .kpi .delta { font-size: 10px; margin-top: 5px; }
+
+
+
+    /* Paneles más compactos */
+
+    .panel { padding: 16px 16px; }
+
+    .panel h3 { font-size: 17px; }
+
+    .panel h3 .hint { font-size: 8px; }
+
+    .panel .subhead { font-size: 11px; margin-bottom: 14px; }
+
+
+
+    /* Stickers más chicos pero legibles */
+
+    .sticker-grid { grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; }
+
+    .sticker { font-size: 11px; }
+
+    .sticker .star { font-size: 8px; }
+
+
+
+    .album-section .team-code { font-size: 19px; }
+
+    .album-section .team-stats { font-size: 9px; }
+
+
+
+    /* Mapa: etiquetas adaptan tamaño */
+
+    .map-wrap .label { font-size: 9px; stroke-width: 2px; }
+
+    .map-wrap .label.small { font-size: 7px; }
+
+    .map-legend { font-size: 9px; gap: 8px; }
+
+    .map-legend .scale { width: 140px; height: 10px; }
+
+
+
+    /* Tooltip más compacto */
+
+    .map-tooltip { min-width: 150px; padding: 8px 11px; font-size: 10px; }
+
+    .map-tooltip .tt-team { font-size: 15px; }
+
+    .map-tooltip .tt-pct { font-size: 11px; }
+
+
+
+    /* Intercambio: items más compactos */
+
+    .swap-item { grid-template-columns: 38px 1fr auto; gap: 8px; padding: 8px 10px; font-size: 12px; }
+
+    .swap-item .team { font-size: 14px; }
+
+    .swap-item .nums { font-size: 10px; }
+
+    .swap-item .total { font-size: 20px; }
+
+
+
+    /* Tabla de completion */
+
+    .comp-row { grid-template-columns: 36px 1fr 42px; font-size: 11px; }
+
+    .comp-row .code { font-size: 10px; }
+
+  }
+
+
+
+  @media (max-width: 440px) {
+
+    /* iPhone 17 Pro Max portrait ≈ 440 CSS px */
+
+    .hero h1 { font-size: clamp(28px, 10vw, 42px); }
+
+    .kpis { gap: 7px; }
+
+    .kpi { padding: 12px 12px; }
+
+    .kpi .value { font-size: 26px; }
+
+    .sticker-grid { grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 4px; }
+
+    .sticker { font-size: 10px; }
+
+    .panel { padding: 14px 13px; }
+
+    /* Legend más compacta — apilar verticalmente algunos items */
+
+    .legend { padding: 10px 12px; gap: 8px 14px; }
+
+    .legend-item { font-size: 10px; }
+
+    .legend-sw { width: 14px; height: 14px; }
+
+  }
+
+
+
+  @media (max-width: 380px) {
+
+    .kpis { grid-template-columns: 1fr 1fr; }
+
+    .kpi .value { font-size: 24px; }
+
+    .sticker-grid { grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); gap: 3px; }
+
+    .sticker { font-size: 9px; }
+
+    .sticker .star { font-size: 7px; top: 0; left: 2px; }
+
+    .swap-item { grid-template-columns: 34px 1fr 34px; font-size: 11px; }
+
+    .swap-item .total { font-size: 17px; }
+
+  }
+
+
+
+  /* === Touch-friendly hover fallback === */
+
+  @media (hover: none) {
+
+    .sticker:hover { transform: none; }
+
+    .sticker:active { transform: scale(0.94); }
+
+    .chip:hover { color: var(--ink-2); border-color: var(--line); }
+
+    .btn:hover { color: var(--ink-2); border-color: var(--line); }
+
+    .tab:hover { color: var(--ink-3); }
+
+  }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<header class="hero">
+
+  <div>
+
+    <div class="eyebrow">FIFA World Cup 2026 · Panini Official Collection</div>
+
+    <h1>El álbum de <em>Pipe</em></h1>
+
+    <p class="sub">Control y seguimiento de la colección oficial. 48 selecciones, 994 cromos, 68 brillantes, 14 bonus Coca-Cola. Datos persistidos localmente.</p>
+
+  </div>
+
+  <div class="meta">
+
+    <div>USUARIO · <strong>PIPE</strong></div>
+
+    <div>FUENTE · <strong>FIGURITAS.APP</strong></div>
+
+    <div>SOBRES ABIERTOS · <strong id="m-sobres">95</strong></div>
+
+    <div id="m-date">—</div>
+
+  </div>
+
+</header>
+
+
+
+<nav class="tabs">
+
+  <button class="tab active" data-view="overview">▌ Resumen <span class="badge">KPIs</span></button>
+
+  <button class="tab" data-view="album">▌ Álbum <span class="badge" id="t-album">994</span></button>
+
+  <button class="tab" data-view="swap">▌ Intercambio <span class="badge" id="t-swap">0</span></button>
+
+  <button class="tab" data-view="analytics">▌ Analítica <span class="badge">Charts</span></button>
+
+</nav>
+
+
+
+<!-- ============= OVERVIEW ============= -->
+
+<section class="view active" id="view-overview">
+
+
+
+  <div class="kpis">
+
+    <div class="kpi">
+
+      <div class="label">Completado</div>
+
+      <div class="value"><span id="k-pct">0</span><span class="unit">%</span></div>
+
+      <div class="delta"><span id="k-have">0</span> / 994 cromos</div>
+
+    </div>
+
+    <div class="kpi amber">
+
+      <div class="label">Me faltan</div>
+
+      <div class="value" id="k-falt">0</div>
+
+      <div class="delta" id="k-falt-d">cromos por conseguir</div>
+
+    </div>
+
+    <div class="kpi gold">
+
+      <div class="label">Brillantes</div>
+
+      <div class="value"><span id="k-foil">0</span><span class="unit">/68</span></div>
+
+      <div class="delta"><span id="k-foil-pct">0</span>% foil completado</div>
+
+    </div>
+
+    <div class="kpi red">
+
+      <div class="label">Repetidas</div>
+
+      <div class="value" id="k-rep">0</div>
+
+      <div class="delta">unidades para canjear</div>
+
+    </div>
+
+    <div class="kpi blue">
+
+      <div class="label">Sobres usados</div>
+
+      <div class="value" id="k-sobres">95</div>
+
+      <div class="delta"><span id="k-eff">0</span>% eficiencia</div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="grid-main">
+
+
+
+    <div class="panel">
+
+      <h3>Avance global <span class="hint">994 CROMOS TOTALES</span></h3>
+
+      <p class="subhead">Progreso acumulado de la colección.</p>
+
+      <div class="progress-mega"><div class="fill" id="mega-fill" style="width:0%"></div></div>
+
+      <div class="progress-legend">
+
+        <span>0</span><span id="mega-mid">— de 994</span><span>994</span>
+
+      </div>
+
+
+
+      <h3 style="margin-top:30px;">Equipos cerca de completarse <span class="hint">TOP 12</span></h3>
+
+      <p class="subhead">Ordenados por porcentaje completado (excluyendo bonus).</p>
+
+      <div class="completion-list" id="completion-top"></div>
+
+    </div>
+
+
+
+    <div class="panel">
+
+      <h3>Distribución por estado <span class="hint">DONUT</span></h3>
+
+      <p class="subhead">Tengo vs faltan vs repetidas (duplicados sumados aparte).</p>
+
+      <div class="chart-box" style="height:220px;"><canvas id="chart-donut"></canvas></div>
+
+
+
+      <h3 style="margin-top:24px;">Proyección de costo <span class="hint">ESTIMADO</span></h3>
+
+      <p class="subhead">Asumiendo ~1.5 cromos nuevos por sobre a partir de ahora (rendimiento decreciente).</p>
+
+      <div id="projection" style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-2); line-height:1.9;"></div>
+
+    </div>
+
+
+
+  </div>
+
+
+
+  <div class="panel">
+
+    <h3>Equipos más rezagados <span class="hint">MAYOR CANTIDAD DE FALTANTES</span></h3>
+
+    <p class="subhead">Donde más láminas faltan por conseguir. Ataque prioritario.</p>
+
+    <div class="chart-box" style="height:280px;"><canvas id="chart-bars"></canvas></div>
+
+  </div>
+
+
+
+</section>
+
+
+
+<!-- ============= ALBUM ============= -->
+
+<section class="view" id="view-album">
+
+
+
+  <div class="legend">
+
+    <div class="legend-item"><div class="legend-sw sw-missing"></div> Me falta</div>
+
+    <div class="legend-item"><div class="legend-sw sw-foil-missing"></div> ★ Brillante (me falta)</div>
+
+    <div class="legend-item"><div class="legend-sw sw-have"></div> La tengo</div>
+
+    <div class="legend-item"><div class="legend-sw sw-foil-have"></div> ★ Brillante (tengo)</div>
+
+    <div class="legend-item"><div class="legend-sw sw-rep"></div> Repetida</div>
+
+    <div class="legend-item" style="margin-left:auto; color:var(--ink-3); font-size:10px;">CLICK = ciclo · SHIFT+CLICK = +1 rep · ALT+CLICK = -1 rep</div>
+
+  </div>
+
+
+
+  <div class="filter-row">
+
+    <button class="chip active" data-filter="all">Todos</button>
+
+    <button class="chip" data-filter="incomplete">Incompletos</button>
+
+    <button class="chip" data-filter="complete">Completos</button>
+
+    <button class="chip" data-filter="empty">Sin empezar</button>
+
+    <button class="chip" data-filter="foil">Solo brillantes</button>
+
+    <div class="spacer"></div>
+
+    <input class="search" id="search-team" placeholder="Buscar equipo (ARG, BRA...)">
+
+    <div class="actions">
+
+      <button class="btn" id="btn-export">↓ Exportar JSON</button>
+
+      <button class="btn" id="btn-import">↑ Importar</button>
+
+      <button class="btn danger" id="btn-reset">⟲ Reset</button>
+
+    </div>
+
+  </div>
+
+
+
+  <div id="album-container"></div>
+
+
+
+</section>
+
+
+
+<!-- ============= SWAP ============= -->
+
+<section class="view" id="view-swap">
+
+
+
+  <div class="legend">
+
+    <div class="legend-item"><strong style="color:var(--ink)">Estrategia de intercambio.</strong></div>
+
+    <div class="legend-item">Izquierda: <strong>lo que ofrezco</strong> (mis repetidas)</div>
+
+    <div class="legend-item">Derecha: <strong>lo que busco</strong> (mis faltantes)</div>
+
+    <div class="legend-item" style="margin-left:auto; color:var(--ink-3);">Cromos con <span style="color:var(--gold-2);">★</span> son brillantes (valor de intercambio alto)</div>
+
+  </div>
+
+
+
+  <div class="swap-grid">
+
+
+
+    <div class="panel swap-col">
+
+      <h4>OFREZCO <span class="count" id="offer-count">0 cromos · 0 equipos</span></h4>
+
+      <p class="subhead" style="margin-bottom:14px;">Mis láminas repetidas, ordenadas por cantidad de duplicados.</p>
+
+      <div class="swap-list" id="swap-offer"></div>
+
+    </div>
+
+
+
+    <div class="panel swap-col">
+
+      <h4>BUSCO <span class="count" id="want-count">0 cromos · 0 equipos</span></h4>
+
+      <p class="subhead" style="margin-bottom:14px;">Mis faltantes, ordenadas por equipo. Prioriza equipos con pocos faltantes.</p>
+
+      <div class="swap-list" id="swap-want"></div>
+
+    </div>
+
+
+
+  </div>
+
+
+
+</section>
+
+
+
+<!-- ============= ANALYTICS ============= -->
+
+<section class="view" id="view-analytics">
+
+
+
+  <div class="panel" style="margin-bottom:20px;">
+
+    <h3>Mapa de participantes <span class="hint">48 SELECCIONES · % AVANCE POR PAÍS</span></h3>
+
+    <p class="subhead">Cada país anfitrión o clasificado al Mundial 2026. Color = % completado. Etiquetas: <strong style="color:var(--pitch-2)">tengo</strong>/<strong style="color:var(--red-2)">faltan</strong>. Pasa el mouse sobre cualquier país para ver el detalle.</p>
+
+    <div class="map-wrap" id="map-wrap">
+
+      <div class="map-loading" id="map-loading">⊙ Cargando geografía mundial…</div>
+
+    </div>
+
+    <div class="map-legend">
+
+      <span>0%</span>
+
+      <div class="scale">
+
+        <div style="background:#5a1818"></div>
+
+        <div style="background:#8a2828"></div>
+
+        <div style="background:#c7611f"></div>
+
+        <div style="background:#e0a64a"></div>
+
+        <div style="background:#a8c84a"></div>
+
+        <div style="background:#36c374"></div>
+
+        <div style="background:#1f9d55"></div>
+
+      </div>
+
+      <span>100%</span>
+
+      <span style="margin-left:18px;">⬚ Países sin participar</span>
+
+      <span style="flex-basis:100%; color:var(--ink-3); font-size:9px; margin-top:2px;">Reino Unido = promedio ENG + SCO</span>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="chart-row">
+
+    <div class="panel">
+
+      <h3>Distribución de faltantes por confederación <span class="hint">REGIONAL</span></h3>
+
+      <p class="subhead">¿Qué confederación me genera más dificultad?</p>
+
+      <div class="chart-box"><canvas id="chart-conf"></canvas></div>
+
+    </div>
+
+    <div class="panel">
+
+      <h3>Repetidas: ¿concentradas o dispersas? <span class="hint">DUPLICADOS</span></h3>
+
+      <p class="subhead">Equipos con más láminas repetidas (peor distribución de sobres).</p>
+
+      <div class="chart-box"><canvas id="chart-repbars"></canvas></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="panel">
+
+    <h3>Ranking de equipos · % completado <span class="hint">TODOS LOS EQUIPOS</span></h3>
+
+    <p class="subhead">De más a menos avanzado. Incluye brillantes y Coca-Cola.</p>
+
+    <div class="chart-box" style="height:520px;"><canvas id="chart-ranking"></canvas></div>
+
+  </div>
+
+
+
+</section>
+
+
+
+<footer>
+
+  PANINI FIFA WORLD CUP 2026 · TRACKER PERSONAL · DATOS LOCALES · NO AFILIADO A PANINI O FIFA
+
+</footer>
+
+
+
+<script>
+
+/* ============================================================
+
+   DATOS INICIALES (extraídos del PDF de figuritas.app)
+
+   ============================================================ */
+
+
+
+const TEAM_NAMES = {
+
+  FWC: "Intro FWC", MEX: "México", RSA: "Sudáfrica", KOR: "Corea del Sur",
+
+  CZE: "República Checa", CAN: "Canadá", BIH: "Bosnia", QAT: "Qatar",
+
+  SUI: "Suiza", BRA: "Brasil", MAR: "Marruecos", HAI: "Haití",
+
+  SCO: "Escocia", USA: "Estados Unidos", PAR: "Paraguay", AUS: "Australia",
+
+  TUR: "Turquía", GER: "Alemania", CUW: "Curazao", CIV: "Costa de Marfil",
+
+  ECU: "Ecuador", NED: "Países Bajos", JPN: "Japón", SWE: "Suecia",
+
+  TUN: "Túnez", BEL: "Bélgica", EGY: "Egipto", IRN: "Irán",
+
+  NZL: "Nueva Zelanda", ESP: "España", CPV: "Cabo Verde", KSA: "Arabia Saudita",
+
+  URU: "Uruguay", FRA: "Francia", SEN: "Senegal", IRQ: "Iraq",
+
+  NOR: "Noruega", ARG: "Argentina", ALG: "Argelia", AUT: "Austria",
+
+  JOR: "Jordania", POR: "Portugal", COD: "RD Congo", UZB: "Uzbekistán",
+
+  COL: "Colombia", ENG: "Inglaterra", CRO: "Croacia", GHA: "Ghana",
+
+  PAN: "Panamá", CC: "Coca-Cola"
+
+};
+
+
+
+const CONFED = {
+
+  MEX:"CONCACAF", USA:"CONCACAF", CAN:"CONCACAF", HAI:"CONCACAF", CUW:"CONCACAF", PAN:"CONCACAF",
+
+  BRA:"CONMEBOL", PAR:"CONMEBOL", ECU:"CONMEBOL", ARG:"CONMEBOL", URU:"CONMEBOL", COL:"CONMEBOL",
+
+  KOR:"AFC", QAT:"AFC", AUS:"AFC", JPN:"AFC", IRN:"AFC", KSA:"AFC", UZB:"AFC", IRQ:"AFC", JOR:"AFC",
+
+  RSA:"CAF", MAR:"CAF", CIV:"CAF", TUN:"CAF", EGY:"CAF", CPV:"CAF", SEN:"CAF", ALG:"CAF", COD:"CAF", GHA:"CAF",
+
+  CZE:"UEFA", SUI:"UEFA", SCO:"UEFA", TUR:"UEFA", GER:"UEFA", NED:"UEFA", SWE:"UEFA", BEL:"UEFA",
+
+  ESP:"UEFA", FRA:"UEFA", NOR:"UEFA", AUT:"UEFA", POR:"UEFA", ENG:"UEFA", CRO:"UEFA", BIH:"UEFA",
+
+  NZL:"OFC",
+
+  FWC:"ESPECIAL", CC:"ESPECIAL"
+
+};
+
+
+
+// Orden de presentación según el PDF
+
+const TEAM_ORDER = ["FWC","MEX","RSA","KOR","CZE","CAN","BIH","QAT","SUI","BRA","MAR","HAI","SCO","USA","PAR","AUS","TUR","GER","CUW","CIV","ECU","NED","JPN","SWE","TUN","BEL","EGY","IRN","NZL","ESP","CPV","KSA","URU","FRA","SEN","IRQ","NOR","ARG","ALG","AUT","JOR","POR","COD","UZB","COL","ENG","CRO","GHA","PAN","CC"];
+
+
+
+// Definición del tamaño de cada equipo
+
+const TEAM_SIZE = {};
+
+TEAM_ORDER.forEach(t => {
+
+  if (t === "FWC") TEAM_SIZE[t] = 20;     // FWC 00..19 (00,1..19)
+
+  else if (t === "CC") TEAM_SIZE[t] = 14; // Coca-Cola 1..14
+
+  else TEAM_SIZE[t] = 20;                  // Cada equipo 1..20
+
+});
+
+
+
+// FOIL/BRILLANTES: todas las FWC (00..19) + cromo nº 1 de cada selección (48 escudos) = 68
+
+function isFoil(team, num) {
+
+  if (team === "FWC") return true;
+
+  if (team === "CC") return false;
+
+  return num === 1;
+
+}
+
+
+
+// Numeración de cada equipo
+
+function numbersFor(team) {
+
+  if (team === "FWC") {
+
+    // 00, 1..19 — pero el PDF usa 0..17 entre faltan/repetidas; usamos 0..19 (20 stickers)
+
+    return Array.from({length: 20}, (_, i) => i); // 0..19
+
+  }
+
+  if (team === "CC") return Array.from({length: 14}, (_, i) => i + 1);
+
+  return Array.from({length: 20}, (_, i) => i + 1);
+
+}
+
+
+
+// Datos del PDF de Pipe
+
+const INITIAL_FALTAN = {
+
+  FWC: [0,1,2,4, 5,6,7,8, 9,10,12,13,14,15,16,17],
+
+  MEX: [1,3,4,6,7,8,10,12,13,14,16,17,18,20],
+
+  RSA: [5,7,8,11,12,16,17,19,20],
+
+  KOR: [2,3,4,10,11,13,15,16,17,19,20],
+
+  CZE: [1,5,13,14,16,17,18],
+
+  CAN: [1,5,9,10,15,16,18,19,20],
+
+  BIH: [2,3,4,5,6,7,13,20],
+
+  QAT: [2,3,5,6,7,9,10,14,15,16,17,18,19],
+
+  SUI: [3,4,8,13,18,19,20],
+
+  BRA: [1,8,11,14,16,20],
+
+  MAR: [1,7,10,14,18,19,20],
+
+  HAI: [1,2,4,6,8,10,15,17],
+
+  SCO: [3,5,7,9,11,12,15,16,18],
+
+  USA: [1,2,3,5,6,10],
+
+  PAR: [1,2,3,5,9,14,18],
+
+  AUS: [1,2,5,6,7,10,11,12,16,17,20],
+
+  TUR: [1,2,4,5,6,7,9,11,13,14,18,19],
+
+  GER: [4,11,12,17,19,20],
+
+  CUW: [1,4,10,11,12,15,17],
+
+  CIV: [1,3,4,5,7,8,9,11,12,16,17,18],
+
+  ECU: [1,2,11,18],
+
+  NED: [1,2,3,5,6,7,9,10,11,12,13,14,15,16,18,19],
+
+  JPN: [3,4,5,6,7,8,10,11,12,15,16,17,19],
+
+  SWE: [1,3,8,11,12,13,16,19,20],
+
+  TUN: [3,4,5,7,8,12,13,17,20],
+
+  BEL: [3,4,5,6,8,9,13,17],
+
+  EGY: [1,7,8,9,13,14,16,18],
+
+  IRN: [1,2,5,9,13,14,15,17],
+
+  NZL: [2,6,10,13,15,19,20],
+
+  ESP: [3,5,9,11,13,14,15,16,18,19],
+
+  CPV: [2,3,4,6,7,8,10,11,12,13,15,16,17,18,20],
+
+  KSA: [2,3,5,6,8,9,12,14,19],
+
+  URU: [2,5,6,9,10,11,13],
+
+  FRA: [1,2,3,4,5,7,8,12,14,15,19],
+
+  SEN: [2,3,4,6,7,12,14,15,18],
+
+  IRQ: [1,2,3,6,7,8,9,11,12,14,16,17,18,20],
+
+  NOR: [3,4,7,8,10,11,13,15,16,20],
+
+  ARG: [1,3,4,5,7,8,9,11,12,14,16,17,20],
+
+  ALG: [1,5,9,11,14,15,16],
+
+  AUT: [2,5,7,8,10,13,15,16,18,19,20],
+
+  JOR: [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+
+  POR: [1,3,8,12,14,16,17,20],
+
+  COD: [1,5,7,9,13,16,20],
+
+  UZB: [1,4,5,6,8,10,12,13,15,16],
+
+  COL: [2,3,6,7,9,10,11,13,16,18,19],
+
+  ENG: [1,2,3,6,7,11,15,16,20],
+
+  CRO: [10,20],
+
+  GHA: [2,3,5,6,7,9,11,14,18],
+
+  PAN: [1,5,9,12,14,17,18],
+
+  CC: [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+
+};
+
+
+
+const INITIAL_REPETIDAS = {
+
+  RSA:[1,3,9,14,15], KOR:[1,8], CZE:[6,10], CAN:[7,8,11,17], BIH:[12,14,15,18,19],
+
+  QAT:[1,4,8,12,20], SUI:[1,10,11,12,16], BRA:[9,12,15,17,19], MAR:[3,4,6,9,13],
+
+  HAI:[3,7,11,13,20], SCO:[8,13], USA:[15,16,18,19], PAR:[7,11,13,16,20],
+
+  AUS:[15,19], TUR:[15,16,17], GER:[10,15], CUW:[2,9,14], CIV:[2,6,10],
+
+  ECU:[12], JPN:[1,13,20], SWE:[2,6,7,9,14], TUN:[10,18], BEL:[10,11,14,20],
+
+  EGY:[11,12], IRN:[16], NZL:[1,3], ESP:[1,2,10], CPV:[19], KSA:[13],
+
+  URU:[1,3,4,8,16,20], SEN:[5,9,10], NOR:[9,14,18], ARG:[6,10,15,18,19],
+
+  ALG:[4,6,8,10,12], AUT:[4], JOR:[2], POR:[6,10,15,19], COD:[3,4,6,8,10],
+
+  UZB:[2,3,7,17], ENG:[9,12], CRO:[3,5,7,15], GHA:[12,13], PAN:[13]
+
+};
+
+
+
+/* ============================================================
+
+   ESTADO  —  state[team][num] = { status: 0|1|2 , repCount: int }
+
+   status: 0 = falta, 1 = tengo, 2 = tengo + repetida
+
+   ============================================================ */
+
+
+
+const STORAGE_KEY = "panini_fwc_2026_pipe_v1";
+
+
+
+function buildInitialState() {
+
+  const state = {};
+
+  TEAM_ORDER.forEach(team => {
+
+    state[team] = {};
+
+    numbersFor(team).forEach(n => {
+
+      const falta = (INITIAL_FALTAN[team] || []).includes(n);
+
+      const repArr = (INITIAL_REPETIDAS[team] || []);
+
+      const rep = repArr.includes(n);
+
+      state[team][n] = {
+
+        status: falta ? 0 : (rep ? 2 : 1),
+
+        repCount: rep ? 1 : 0
+
+      };
+
+    });
+
+  });
+
+  return state;
+
+}
+
+
+
+function loadState() {
+
+  try {
+
+    const raw = localStorage.getItem(STORAGE_KEY);
+
+    if (raw) return JSON.parse(raw);
+
+  } catch(e) {}
+
+  return buildInitialState();
+
+}
+
+function saveState() {
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  localStorage.setItem(STORAGE_KEY + "_lastsave", new Date().toISOString());
+
+}
+
+
+
+let state = loadState();
+
+
+
+/* ============================================================
+
+   CÁLCULOS
+
+   ============================================================ */
+
+
+
+function teamStats(team) {
+
+  const nums = numbersFor(team);
+
+  let have = 0, falt = 0, repUnits = 0, foilHave = 0, foilTotal = 0;
+
+  nums.forEach(n => {
+
+    const c = state[team][n];
+
+    if (isFoil(team, n)) {
+
+      foilTotal++;
+
+      if (c.status >= 1) foilHave++;
+
+    }
+
+    if (c.status === 0) falt++;
+
+    else have++;
+
+    if (c.status === 2) repUnits += c.repCount;
+
+  });
+
+  return {
+
+    total: nums.length, have, falt, repUnits, foilHave, foilTotal,
+
+    pct: nums.length ? Math.round(have / nums.length * 100) : 0
+
+  };
+
+}
+
+
+
+function globalStats() {
+
+  let total=0, have=0, falt=0, rep=0, foilH=0, foilT=0;
+
+  TEAM_ORDER.forEach(t => {
+
+    const s = teamStats(t);
+
+    total += s.total; have += s.have; falt += s.falt; rep += s.repUnits;
+
+    foilH += s.foilHave; foilT += s.foilTotal;
+
+  });
+
+  return {
+
+    total, have, falt, rep, foilH, foilT,
+
+    pct: total ? Math.round(have/total*1000)/10 : 0
+
+  };
+
+}
+
+
+
+/* ============================================================
+
+   RENDER
+
+   ============================================================ */
+
+
+
+function renderOverview() {
+
+  const g = globalStats();
+
+  document.getElementById("k-pct").textContent = g.pct.toFixed(1);
+
+  document.getElementById("k-have").textContent = g.have;
+
+  document.getElementById("k-falt").textContent = g.falt;
+
+  document.getElementById("k-foil").textContent = g.foilH;
+
+  document.getElementById("k-foil-pct").textContent = g.foilT ? Math.round(g.foilH/g.foilT*100) : 0;
+
+  document.getElementById("k-rep").textContent = g.rep;
+
+  document.getElementById("t-album").textContent = g.have + "/" + g.total;
+
+  document.getElementById("t-swap").textContent = g.rep;
+
+
+
+  const sobres = parseInt(localStorage.getItem("panini_sobres") || "95", 10);
+
+  const cromosUtiles = g.have; // únicos
+
+  const cromosTotalesAbiertos = sobres * 7;
+
+  const eff = cromosTotalesAbiertos ? Math.round(cromosUtiles / cromosTotalesAbiertos * 100) : 0;
+
+  document.getElementById("k-sobres").textContent = sobres;
+
+  document.getElementById("k-eff").textContent = eff;
+
+  document.getElementById("m-sobres").textContent = sobres;
+
+
+
+  // Progress bar
+
+  document.getElementById("mega-fill").style.width = g.pct + "%";
+
+  document.getElementById("mega-mid").textContent = g.have + " de " + g.total + " (" + g.pct.toFixed(1) + "%)";
+
+
+
+  // Completion top
+
+  const cont = document.getElementById("completion-top");
+
+  cont.innerHTML = "";
+
+  const ranked = TEAM_ORDER
+
+    .filter(t => t !== "CC" && t !== "FWC")
+
+    .map(t => ({ t, ...teamStats(t) }))
+
+    .sort((a,b) => b.pct - a.pct)
+
+    .slice(0, 12);
+
+  ranked.forEach(r => {
+
+    const cls = r.pct >= 75 ? "" : (r.pct >= 50 ? "mid" : "low");
+
+    cont.insertAdjacentHTML("beforeend",
+
+      `<div class="comp-row">
+
+        <span class="code">${r.t}</span>
+
+        <div class="bar"><div class="f ${cls}" style="width:${r.pct}%"></div></div>
+
+        <span class="pct">${r.pct}%</span>
+
+      </div>`);
+
+  });
+
+
+
+  // Projection
+
+  // Cromos faltantes únicos / probabilidad de obtener un faltante en un sobre
+
+  const remaining = g.falt;
+
+  const probNew = remaining / g.total; // simplificación: prob de cada cromo de un sobre de ser nuevo
+
+  const cromosPorSobre = 7;
+
+  const expectNew = cromosPorSobre * probNew;
+
+  const sobresEst = expectNew > 0 ? Math.ceil(remaining / expectNew) : 0;
+
+  const cromosEst = sobresEst * cromosPorSobre;
+
+  const proj = document.getElementById("projection");
+
+  proj.innerHTML = `
+
+    <div>Faltantes únicas: <strong style="color:var(--ink)">${remaining}</strong></div>
+
+    <div>Prob. cromo nuevo: <strong style="color:var(--gold-2)">${(probNew*100).toFixed(1)}%</strong> por cromo</div>
+
+    <div>Esperanza cromos nuevos / sobre: <strong style="color:var(--pitch-2)">${expectNew.toFixed(2)}</strong></div>
+
+    <div>Sobres adicionales estimados: <strong style="color:var(--ink)">~${sobresEst}</strong></div>
+
+    <div style="margin-top:8px; color:var(--ink-3); font-size:10px;">Solo abriendo sobres, sin intercambio. La realidad será peor: las últimas decenas requieren intercambio sí o sí.</div>
+
+  `;
+
+
+
+  renderDonut(g);
+
+  renderBars();
+
+  document.getElementById("m-date").textContent = "ACTUALIZADO · " + new Date().toLocaleString('es-CL', {dateStyle:'medium', timeStyle:'short'}).toUpperCase();
+
+}
+
+
+
+let donutChart, barsChart, confChart, repBarsChart, rankingChart;
+
+
+
+function renderDonut(g) {
+
+  const ctx = document.getElementById("chart-donut");
+
+  if (donutChart) donutChart.destroy();
+
+  donutChart = new Chart(ctx, {
+
+    type: 'doughnut',
+
+    data: {
+
+      labels: ['Tengo', 'Me faltan'],
+
+      datasets: [{
+
+        data: [g.have, g.falt],
+
+        backgroundColor: ['#1f9d55', '#1a2320'],
+
+        borderColor: ['#36c374', '#243029'],
+
+        borderWidth: 1
+
+      }]
+
+    },
+
+    options: {
+
+      responsive: true,
+
+      maintainAspectRatio: false,
+
+      cutout: '70%',
+
+      plugins: {
+
+        legend: { display: true, position: 'bottom', labels: { color: '#b8c2bb', font: { family: 'JetBrains Mono', size: 11 } } },
+
+        tooltip: { backgroundColor: '#11181e', titleColor: '#f2efe6', bodyColor: '#b8c2bb' }
+
+      }
+
+    }
+
+  });
+
+}
+
+
+
+function renderBars() {
+
+  const data = TEAM_ORDER
+
+    .filter(t => t !== "CC" && t !== "FWC")
+
+    .map(t => ({ t, ...teamStats(t) }))
+
+    .sort((a,b) => b.falt - a.falt)
+
+    .slice(0, 15);
+
+  const ctx = document.getElementById("chart-bars");
+
+  if (barsChart) barsChart.destroy();
+
+  barsChart = new Chart(ctx, {
+
+    type: 'bar',
+
+    data: {
+
+      labels: data.map(d => d.t),
+
+      datasets: [{
+
+        label: 'Faltantes',
+
+        data: data.map(d => d.falt),
+
+        backgroundColor: data.map(d => d.falt >= 15 ? '#d9534f' : (d.falt >= 10 ? '#e0a64a' : '#1f9d55')),
+
+        borderColor: '#243029', borderWidth: 1
+
+      }]
+
+    },
+
+    options: {
+
+      responsive: true, maintainAspectRatio: false,
+
+      plugins: { legend: { display: false } },
+
+      scales: {
+
+        x: { ticks: { color: '#b8c2bb', font: { family: 'JetBrains Mono', size: 11 } }, grid: { color: '#243029' } },
+
+        y: { ticks: { color: '#b8c2bb', font: { family: 'JetBrains Mono', size: 11 } }, grid: { color: '#243029' }, beginAtZero: true }
+
+      }
+
+    }
+
+  });
+
+}
+
+
+
+/* === ALBUM === */
+
+
+
+let currentFilter = "all";
+
+let currentSearch = "";
+
+
+
+function renderAlbum() {
+
+  const cont = document.getElementById("album-container");
+
+  cont.innerHTML = "";
+
+  TEAM_ORDER.forEach(team => {
+
+    const s = teamStats(team);
+
+    const isComplete = s.falt === 0;
+
+    const isEmpty = s.have === 0;
+
+    if (currentFilter === "incomplete" && isComplete) return;
+
+    if (currentFilter === "complete" && !isComplete) return;
+
+    if (currentFilter === "empty" && !isEmpty) return;
+
+    if (currentFilter === "foil" && s.foilTotal === 0) return;
+
+    if (currentSearch && !team.toLowerCase().includes(currentSearch) && !(TEAM_NAMES[team]||'').toLowerCase().includes(currentSearch)) return;
+
+
+
+    const section = document.createElement("div");
+
+    section.className = "album-section";
+
+    const head = `<div class="team-header">
+
+      <span class="team-code">${team}</span>
+
+      <span style="font-size:12px; color:var(--ink-3);">${TEAM_NAMES[team]||''}</span>
+
+      <span class="team-stats"><strong>${s.have}</strong>/${s.total} · ${s.pct}% · ${s.repUnits} rep ${s.foilTotal?' · ★'+s.foilHave+'/'+s.foilTotal:''}</span>
+
+    </div>`;
+
+    section.insertAdjacentHTML("beforeend", head);
+
+
+
+    const grid = document.createElement("div");
+
+    grid.className = "sticker-grid";
+
+    numbersFor(team).forEach(n => {
+
+      const c = state[team][n];
+
+      const foil = isFoil(team, n);
+
+      let cls = "sticker";
+
+      if (foil) cls += " foil";
+
+      if (c.status === 1) cls += " have";
+
+      else if (c.status === 2) cls += " have rep";
+
+      const repAttr = c.status === 2 ? ` data-rep="${c.repCount}"` : "";
+
+      const starHtml = foil ? '<span class="star">★</span>' : '';
+
+      grid.insertAdjacentHTML("beforeend",
+
+        `<div class="${cls}" data-team="${team}" data-num="${n}"${repAttr}>${starHtml}${n.toString().padStart(2,'0')}</div>`);
+
+    });
+
+    section.appendChild(grid);
+
+    cont.appendChild(section);
+
+  });
+
+}
+
+
+
+document.addEventListener("click", e => {
+
+  const st = e.target.closest(".sticker");
+
+  if (!st) return;
+
+  const team = st.dataset.team;
+
+  const num = parseInt(st.dataset.num, 10);
+
+  const c = state[team][num];
+
+
+
+  if (e.shiftKey) {
+
+    // SHIFT = +1 repetida
+
+    if (c.status === 0) c.status = 1;
+
+    else { c.status = 2; c.repCount += 1; }
+
+  } else if (e.altKey) {
+
+    // ALT = -1 repetida
+
+    if (c.status === 2) {
+
+      c.repCount = Math.max(0, c.repCount - 1);
+
+      if (c.repCount === 0) c.status = 1;
+
+    }
+
+  } else {
+
+    // CLICK normal = ciclo
+
+    if (c.status === 0) { c.status = 1; c.repCount = 0; }
+
+    else if (c.status === 1) { c.status = 2; c.repCount = 1; }
+
+    else { c.status = 0; c.repCount = 0; }
+
+  }
+
+  saveState();
+
+  renderAlbum();
+
+  renderOverview();
+
+  renderSwap();
+
+});
+
+
+
+document.querySelectorAll("#view-album .chip").forEach(ch => {
+
+  ch.addEventListener("click", () => {
+
+    document.querySelectorAll("#view-album .chip").forEach(c => c.classList.remove("active"));
+
+    ch.classList.add("active");
+
+    currentFilter = ch.dataset.filter;
+
+    renderAlbum();
+
+  });
+
+});
+
+
+
+document.getElementById("search-team").addEventListener("input", e => {
+
+  currentSearch = e.target.value.trim().toLowerCase();
+
+  renderAlbum();
+
+});
+
+
+
+document.getElementById("btn-export").addEventListener("click", () => {
+
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+
+  a.href = url;
+
+  a.download = "panini_fwc2026_" + new Date().toISOString().slice(0,10) + ".json";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+});
+
+
+
+document.getElementById("btn-import").addEventListener("click", () => {
+
+  const input = document.createElement("input");
+
+  input.type = "file"; input.accept = ".json";
+
+  input.onchange = e => {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = ev => {
+
+      try {
+
+        state = JSON.parse(ev.target.result);
+
+        saveState(); renderAll();
+
+        alert("Datos importados correctamente.");
+
+      } catch(err) { alert("Error al importar: " + err.message); }
+
+    };
+
+    reader.readAsText(file);
+
+  };
+
+  input.click();
+
+});
+
+
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+
+  if (confirm("¿Resetear a los datos originales del PDF? Se perderán todos los cambios hechos.")) {
+
+    state = buildInitialState();
+
+    saveState();
+
+    renderAll();
+
+  }
+
+});
+
+
+
+/* === SWAP === */
+
+
+
+function renderSwap() {
+
+  // OFREZCO
+
+  const offers = [];
+
+  TEAM_ORDER.forEach(team => {
+
+    const items = [];
+
+    numbersFor(team).forEach(n => {
+
+      const c = state[team][n];
+
+      if (c.status === 2 && c.repCount > 0) {
+
+        items.push({ n, count: c.repCount, foil: isFoil(team, n) });
+
+      }
+
+    });
+
+    if (items.length) {
+
+      const total = items.reduce((a,b) => a + b.count, 0);
+
+      offers.push({ team, items, total });
+
+    }
+
+  });
+
+  offers.sort((a,b) => b.total - a.total);
+
+  const offerEl = document.getElementById("swap-offer");
+
+  offerEl.innerHTML = "";
+
+  offers.forEach(o => {
+
+    const numsHtml = o.items.map(it => {
+
+      const cls = it.foil ? "n foil" : (it.count > 1 ? "n rep-multi" : "n");
+
+      const star = it.foil ? "★" : "";
+
+      const qty = it.count > 1 ? `×${it.count}` : "";
+
+      return `<span class="${cls}">${star}${it.n.toString().padStart(2,'0')}${qty}</span>`;
+
+    }).join("");
+
+    offerEl.insertAdjacentHTML("beforeend",
+
+      `<div class="swap-item">
+
+        <span class="team">${o.team}</span>
+
+        <span class="nums">${numsHtml}</span>
+
+        <span class="total">${o.total}</span>
+
+      </div>`);
+
+  });
+
+  const offerTotal = offers.reduce((a,b) => a + b.total, 0);
+
+  document.getElementById("offer-count").textContent = `${offerTotal} cromos · ${offers.length} equipos`;
+
+
+
+  // BUSCO
+
+  const wants = [];
+
+  TEAM_ORDER.forEach(team => {
+
+    const items = [];
+
+    numbersFor(team).forEach(n => {
+
+      const c = state[team][n];
+
+      if (c.status === 0) items.push({ n, foil: isFoil(team, n) });
+
+    });
+
+    if (items.length) {
+
+      wants.push({ team, items, total: items.length, name: TEAM_NAMES[team]||team });
+
+    }
+
+  });
+
+  // Ordenar por cantidad ASC (los más cerca de completar primero)
+
+  wants.sort((a,b) => a.total - b.total);
+
+  const wantEl = document.getElementById("swap-want");
+
+  wantEl.innerHTML = "";
+
+  wants.forEach(w => {
+
+    const numsHtml = w.items.map(it => {
+
+      const cls = it.foil ? "n foil" : "n";
+
+      const star = it.foil ? "★" : "";
+
+      return `<span class="${cls}">${star}${it.n.toString().padStart(2,'0')}</span>`;
+
+    }).join("");
+
+    wantEl.insertAdjacentHTML("beforeend",
+
+      `<div class="swap-item">
+
+        <span class="team">${w.team}</span>
+
+        <span class="nums">${numsHtml}</span>
+
+        <span class="total">${w.total}</span>
+
+      </div>`);
+
+  });
+
+  const wantTotal = wants.reduce((a,b) => a + b.total, 0);
+
+  document.getElementById("want-count").textContent = `${wantTotal} cromos · ${wants.length} equipos`;
+
+}
+
+
+
+/* === MAPAMUNDI === */
+
+
+
+// Mapeo código Panini -> ISO Numeric (la propiedad "id" del world-atlas TopoJSON)
+
+const PANINI_TO_ISO_NUM = {
+
+  MEX:"484", RSA:"710", KOR:"410", CZE:"203", CAN:"124", BIH:"070",
+
+  QAT:"634", SUI:"756", BRA:"076", MAR:"504", HAI:"332", SCO:"826", // UK
+
+  USA:"840", PAR:"600", AUS:"036", TUR:"792", GER:"276", CUW:"531",
+
+  CIV:"384", ECU:"218", NED:"528", JPN:"392", SWE:"752", TUN:"788",
+
+  BEL:"056", EGY:"818", IRN:"364", NZL:"554", ESP:"724", CPV:"132",
+
+  KSA:"682", URU:"858", FRA:"250", SEN:"686", IRQ:"368", NOR:"578",
+
+  ARG:"032", ALG:"012", AUT:"040", JOR:"400", POR:"620", COD:"180",
+
+  UZB:"860", COL:"170", ENG:"826", CRO:"191", GHA:"288", PAN:"591"  // UK también
+
+};
+
+
+
+// Color scale rojo → verde según %
+
+function pctToColor(pct) {
+
+  if (pct === null || pct === undefined) return "#1a2622";
+
+  if (pct >= 90) return "#1f9d55";
+
+  if (pct >= 75) return "#36c374";
+
+  if (pct >= 60) return "#a8c84a";
+
+  if (pct >= 45) return "#e0a64a";
+
+  if (pct >= 30) return "#c7611f";
+
+  if (pct >= 15) return "#8a2828";
+
+  return "#5a1818";
+
+}
+
+
+
+let mapDrawn = false;
+
+let worldData = null;
+
+
+
+async function renderMap() {
+
+  if (mapDrawn && worldData) {
+
+    // Solo actualizar colores
+
+    updateMapColors();
+
+    return;
+
+  }
+
+
+
+  const wrap = document.getElementById("map-wrap");
+
+
+
+  // Cargar topojson si no está cacheado
+
+  if (!worldData) {
+
+    try {
+
+      const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
+
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      worldData = await res.json();
+
+    } catch(err) {
+
+      try {
+
+        // Fallback a unpkg
+
+        const res = await fetch("https://unpkg.com/world-atlas@2/countries-110m.json");
+
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
+        worldData = await res.json();
+
+      } catch(err2) {
+
+        wrap.innerHTML = `<div class="map-error">
+
+          No se pudo cargar el mapa.<br>Posiblemente sin conexión a CDN.<br>
+
+          <span style="color:var(--ink-3); font-size:10px;">${err2.message}</span>
+
+        </div>`;
+
+        return;
+
+      }
+
+    }
+
+  }
+
+
+
+  // Construir lookup ISO->datos del equipo
+
+  const isoData = buildIsoData();
+
+
+
+  // Limpiar y dibujar
+
+  wrap.innerHTML = "";
+
+
+
+  // Tooltip
+
+  const tooltip = document.createElement("div");
+
+  tooltip.className = "map-tooltip";
+
+  tooltip.id = "map-tooltip";
+
+  wrap.appendChild(tooltip);
+
+
+
+  const width = wrap.clientWidth || 1100;
+
+  // En mobile usar proporción más cuadrada (mejor para vertical), en desktop 2:1
+
+  const isMobile = window.innerWidth < 560;
+
+  const heightRatio = isMobile ? 0.62 : 0.50;
+
+  const height = Math.round(width * heightRatio);
+
+
+
+  const svg = d3.select(wrap).append("svg")
+
+    .attr("viewBox", `0 0 ${width} ${height}`)
+
+    .attr("preserveAspectRatio", "xMidYMid meet");
+
+
+
+  // Proyección Robinson-like (Natural Earth) — equilibrada para mundial
+
+  // En mobile escala diferente para aprovechar el espacio
+
+  const scaleDiv = isMobile ? 5.5 : 6.2;
+
+  const projection = d3.geoNaturalEarth1()
+
+    .scale(width / scaleDiv)
+
+    .translate([width/2, height/2 + 8]);
+
+
+
+  const path = d3.geoPath(projection);
+
+
+
+  const countries = topojson.feature(worldData, worldData.objects.countries);
+
+
+
+  // Países
+
+  const countryPaths = svg.append("g")
+
+    .selectAll("path")
+
+    .data(countries.features)
+
+    .join("path")
+
+    .attr("d", path)
+
+    .attr("class", d => isoData[d.id] ? "country participant" : "country")
+
+    .attr("fill", d => {
+
+      const info = isoData[d.id];
+
+      return info ? pctToColor(info.pct) : "#1a2622";
+
+    });
+
+
+
+  // Función para mostrar tooltip (funciona en mouse y touch)
+
+  function showTooltip(event, d) {
+
+    const info = isoData[d.id];
+
+    if (!info) { tooltip.classList.remove("show"); return; }
+
+    const teamsHtml = info.teams.map(t => `
+
+      <div class="tt-team">${t.code} · ${TEAM_NAMES[t.code]}</div>
+
+      <div class="tt-row"><span>Tengo</span><strong style="color:var(--pitch-2)">${t.have} / ${t.total}</strong></div>
+
+      <div class="tt-row"><span>Faltan</span><strong style="color:var(--red-2)">${t.falt}</strong></div>
+
+      <div class="tt-row"><span>Repetidas</span><strong>${t.repUnits}</strong></div>
+
+      <div class="tt-row"><span>Brillantes</span><strong style="color:var(--gold-2)">${t.foilHave}/${t.foilTotal}</strong></div>
+
+      <div class="tt-pct">${t.pct}% completado</div>
+
+    `).join('<div style="height:8px;"></div>');
+
+    tooltip.innerHTML = teamsHtml;
+
+    tooltip.classList.add("show");
+
+    const rect = wrap.getBoundingClientRect();
+
+    // Coordenada del puntero (mouse o touch)
+
+    const px = event.touches ? event.touches[0].clientX : event.clientX;
+
+    const py = event.touches ? event.touches[0].clientY : event.clientY;
+
+    const ttW = tooltip.offsetWidth || 200;
+
+    const ttH = tooltip.offsetHeight || 180;
+
+    let x = px - rect.left + 14;
+
+    let y = py - rect.top + 14;
+
+    // Mantener tooltip dentro del contenedor
+
+    if (x + ttW > rect.width) x = px - rect.left - ttW - 14;
+
+    if (y + ttH > rect.height) y = py - rect.top - ttH - 14;
+
+    x = Math.max(8, x);
+
+    y = Math.max(8, y);
+
+    tooltip.style.left = x + "px";
+
+    tooltip.style.top = y + "px";
+
+  }
+
+
+
+  countryPaths
+
+    .on("mousemove", showTooltip)
+
+    .on("mouseleave", () => tooltip.classList.remove("show"))
+
+    .on("touchstart", function(event, d) {
+
+      event.preventDefault();
+
+      showTooltip(event, d);
+
+    }, { passive: false })
+
+    .on("click", showTooltip);
+
+
+
+  // Tocar fuera del mapa cierra el tooltip
+
+  document.addEventListener("touchstart", (e) => {
+
+    if (!wrap.contains(e.target)) tooltip.classList.remove("show");
+
+  });
+
+
+
+  // Etiquetas: código + tengo/faltan
+
+  const labelG = svg.append("g");
+
+  countries.features.forEach(d => {
+
+    const info = isoData[d.id];
+
+    if (!info) return;
+
+    const centroid = path.centroid(d);
+
+    if (isNaN(centroid[0])) return;
+
+
+
+    info.teams.forEach((t, idx) => {
+
+      const offsetY = idx * 11; // si hay 2 equipos en el mismo país (UK), apilar
+
+      // Texto principal: código
+
+      labelG.append("text")
+
+        .attr("class", "label")
+
+        .attr("x", centroid[0])
+
+        .attr("y", centroid[1] - 3 + offsetY)
+
+        .text(t.code);
+
+      // Texto secundario: tengo/faltan
+
+      labelG.append("text")
+
+        .attr("class", "label small")
+
+        .attr("x", centroid[0])
+
+        .attr("y", centroid[1] + 6 + offsetY)
+
+        .attr("fill", "#b8efc8")
+
+        .text(`${t.have}/${t.falt}`);
+
+    });
+
+  });
+
+
+
+  mapDrawn = true;
+
+}
+
+
+
+function buildIsoData() {
+
+  const iso = {};
+
+  Object.entries(PANINI_TO_ISO_NUM).forEach(([code, isoNum]) => {
+
+    const s = teamStats(code);
+
+    const teamInfo = { code, ...s };
+
+    if (!iso[isoNum]) {
+
+      iso[isoNum] = { pct: s.pct, teams: [teamInfo] };
+
+    } else {
+
+      // Caso UK (ENG + SCO): promediar % y guardar ambos
+
+      iso[isoNum].teams.push(teamInfo);
+
+      const avg = iso[isoNum].teams.reduce((a,b)=>a+b.pct, 0) / iso[isoNum].teams.length;
+
+      iso[isoNum].pct = avg;
+
+    }
+
+  });
+
+  return iso;
+
+}
+
+
+
+function updateMapColors() {
+
+  const isoData = buildIsoData();
+
+  d3.select("#map-wrap svg").selectAll("path.country")
+
+    .attr("class", d => isoData[d.id] ? "country participant" : "country")
+
+    .attr("fill", d => {
+
+      const info = isoData[d.id];
+
+      return info ? pctToColor(info.pct) : "#1a2622";
+
+    });
+
+  // Actualizar etiquetas: borrar y redibujar
+
+  d3.select("#map-wrap svg").selectAll("text.label").remove();
+
+  const wrap = document.getElementById("map-wrap");
+
+  const width = wrap.clientWidth || 1100;
+
+  const isMobile = window.innerWidth < 560;
+
+  const heightRatio = isMobile ? 0.62 : 0.50;
+
+  const height = Math.round(width * heightRatio);
+
+  const scaleDiv = isMobile ? 5.5 : 6.2;
+
+  const projection = d3.geoNaturalEarth1().scale(width / scaleDiv).translate([width/2, height/2 + 8]);
+
+  const path = d3.geoPath(projection);
+
+  const countries = topojson.feature(worldData, worldData.objects.countries);
+
+  const labelG = d3.select("#map-wrap svg").append("g");
+
+  countries.features.forEach(d => {
+
+    const info = isoData[d.id];
+
+    if (!info) return;
+
+    const centroid = path.centroid(d);
+
+    if (isNaN(centroid[0])) return;
+
+    info.teams.forEach((t, idx) => {
+
+      const offsetY = idx * 11;
+
+      labelG.append("text")
+
+        .attr("class", "label")
+
+        .attr("x", centroid[0])
+
+        .attr("y", centroid[1] - 3 + offsetY)
+
+        .text(t.code);
+
+      labelG.append("text")
+
+        .attr("class", "label small")
+
+        .attr("x", centroid[0])
+
+        .attr("y", centroid[1] + 6 + offsetY)
+
+        .attr("fill", "#b8efc8")
+
+        .text(`${t.have}/${t.falt}`);
+
+    });
+
+  });
+
+}
+
+
+
+/* === ANALYTICS === */
+
+
+
+function renderAnalytics() {
+
+  // Por confederación
+
+  const confData = {};
+
+  TEAM_ORDER.forEach(t => {
+
+    const conf = CONFED[t] || "OTRO";
+
+    const s = teamStats(t);
+
+    confData[conf] = (confData[conf]||0) + s.falt;
+
+  });
+
+  const confLabels = Object.keys(confData).sort((a,b) => confData[b]-confData[a]);
+
+  const ctx1 = document.getElementById("chart-conf");
+
+  if (confChart) confChart.destroy();
+
+  confChart = new Chart(ctx1, {
+
+    type: 'bar',
+
+    data: {
+
+      labels: confLabels,
+
+      datasets: [{
+
+        label: 'Faltantes',
+
+        data: confLabels.map(c => confData[c]),
+
+        backgroundColor: ['#d9534f','#e0a64a','#4a8fc4','#1f9d55','#d4a437','#9d6cd9'],
+
+        borderWidth: 0
+
+      }]
+
+    },
+
+    options: {
+
+      indexAxis: 'y',
+
+      responsive: true, maintainAspectRatio: false,
+
+      plugins: { legend: { display: false } },
+
+      scales: {
+
+        x: { ticks:{ color:'#b8c2bb', font:{family:'JetBrains Mono', size:11}}, grid:{color:'#243029'}, beginAtZero:true},
+
+        y: { ticks:{ color:'#b8c2bb', font:{family:'JetBrains Mono', size:11}}, grid:{display:false}}
+
+      }
+
+    }
+
+  });
+
+
+
+  // Repetidas por equipo (top 15)
+
+  const repsData = TEAM_ORDER
+
+    .filter(t => t !== "FWC" && t !== "CC")
+
+    .map(t => ({ t, rep: teamStats(t).repUnits }))
+
+    .filter(d => d.rep > 0)
+
+    .sort((a,b) => b.rep - a.rep)
+
+    .slice(0, 15);
+
+  const ctx2 = document.getElementById("chart-repbars");
+
+  if (repBarsChart) repBarsChart.destroy();
+
+  repBarsChart = new Chart(ctx2, {
+
+    type: 'bar',
+
+    data: {
+
+      labels: repsData.map(d => d.t),
+
+      datasets: [{
+
+        label: 'Repetidas',
+
+        data: repsData.map(d => d.rep),
+
+        backgroundColor: '#d4a437', borderWidth: 0
+
+      }]
+
+    },
+
+    options: {
+
+      responsive: true, maintainAspectRatio: false,
+
+      plugins:{ legend:{display:false} },
+
+      scales: {
+
+        x: { ticks:{color:'#b8c2bb', font:{family:'JetBrains Mono', size:11}}, grid:{color:'#243029'}},
+
+        y: { ticks:{color:'#b8c2bb', font:{family:'JetBrains Mono', size:11}}, grid:{color:'#243029'}, beginAtZero:true}
+
+      }
+
+    }
+
+  });
+
+
+
+  // Ranking completo
+
+  const ranking = TEAM_ORDER
+
+    .map(t => ({ t, ...teamStats(t), name: TEAM_NAMES[t]||t }))
+
+    .sort((a,b) => b.pct - a.pct);
+
+  const ctx3 = document.getElementById("chart-ranking");
+
+  if (rankingChart) rankingChart.destroy();
+
+  rankingChart = new Chart(ctx3, {
+
+    type: 'bar',
+
+    data: {
+
+      labels: ranking.map(r => r.t + ' · ' + r.name),
+
+      datasets: [{
+
+        label: '% completado',
+
+        data: ranking.map(r => r.pct),
+
+        backgroundColor: ranking.map(r => r.pct === 100 ? '#36c374' : (r.pct >= 70 ? '#1f9d55' : (r.pct >= 40 ? '#e0a64a' : '#d9534f'))),
+
+        borderWidth: 0
+
+      }]
+
+    },
+
+    options: {
+
+      indexAxis: 'y',
+
+      responsive: true, maintainAspectRatio: false,
+
+      plugins:{ legend:{display:false},
+
+        tooltip: { callbacks: { label: ctx => ranking[ctx.dataIndex].have + '/' + ranking[ctx.dataIndex].total + ' (' + ctx.parsed.x + '%)' } }
+
+      },
+
+      scales: {
+
+        x: { ticks:{color:'#b8c2bb', font:{family:'JetBrains Mono', size:10}, callback:v=>v+'%'}, grid:{color:'#243029'}, max:100},
+
+        y: { ticks:{color:'#b8c2bb', font:{family:'JetBrains Mono', size:10}}, grid:{display:false}}
+
+      }
+
+    }
+
+  });
+
+}
+
+
+
+/* === TABS === */
+
+document.querySelectorAll(".tab").forEach(tab => {
+
+  tab.addEventListener("click", () => {
+
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+
+    tab.classList.add("active");
+
+    const view = "view-" + tab.dataset.view;
+
+    document.getElementById(view).classList.add("active");
+
+    if (tab.dataset.view === "analytics") {
+
+      renderAnalytics();
+
+      renderMap();
+
+    }
+
+  });
+
+});
+
+
+
+/* === INIT === */
+
+function renderAll() {
+
+  renderOverview();
+
+  renderAlbum();
+
+  renderSwap();
+
+  if (document.getElementById("view-analytics").classList.contains("active")) {
+
+    renderAnalytics();
+
+    renderMap();
+
+  } else if (mapDrawn) {
+
+    // El mapa ya fue dibujado antes, actualizar colores silenciosamente
+
+    updateMapColors();
+
+  }
+
+}
+
+
+
+// Redibujar mapa al rotar el dispositivo o cambiar tamaño
+
+let resizeTimer;
+
+window.addEventListener("resize", () => {
+
+  clearTimeout(resizeTimer);
+
+  resizeTimer = setTimeout(() => {
+
+    if (mapDrawn && document.getElementById("view-analytics").classList.contains("active")) {
+
+      mapDrawn = false;
+
+      const wrap = document.getElementById("map-wrap");
+
+      wrap.innerHTML = "";
+
+      renderMap();
+
+    }
+
+    // También redibujar gráficos de Chart.js (se autodimensionan, pero asegurar)
+
+    if (document.getElementById("view-analytics").classList.contains("active")) {
+
+      renderAnalytics();
+
+    }
+
+  }, 250);
+
+});
+
+window.addEventListener("orientationchange", () => {
+
+  setTimeout(() => {
+
+    if (mapDrawn && document.getElementById("view-analytics").classList.contains("active")) {
+
+      mapDrawn = false;
+
+      const wrap = document.getElementById("map-wrap");
+
+      wrap.innerHTML = "";
+
+      renderMap();
+
+    }
+
+  }, 400);
+
+});
+
+
+
+renderAll();
+
+</script>
+
+</body>
+
+</html>
